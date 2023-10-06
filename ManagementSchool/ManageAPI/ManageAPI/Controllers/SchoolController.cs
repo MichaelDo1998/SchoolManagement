@@ -107,7 +107,7 @@ namespace ManageAPI.Controllers
             }
         }
 
-        [HttpPut("Update/{id}")]
+        [HttpPut("Update")]
         public async Task<IActionResult> Update(School entity)
         {
             try
@@ -136,7 +136,7 @@ namespace ManageAPI.Controllers
         {
             try
             { 
-                CancellationTokenSource source = new CancellationTokenSource();
+                    CancellationTokenSource source = new CancellationTokenSource();
                 source.CancelAfter(TimeSpan.FromSeconds(10));
 
                 entity.CreatedDate = DateTime.Now;
@@ -144,7 +144,7 @@ namespace ManageAPI.Controllers
 
                 await _schoolRepository.Add(entity);
                 source.Token.ThrowIfCancellationRequested();
-                return Ok();
+                return StatusCode((int)HttpStatusCode.OK);
             }
             catch (TaskCanceledException)
             {

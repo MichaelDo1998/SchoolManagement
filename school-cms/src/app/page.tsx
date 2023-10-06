@@ -1,18 +1,24 @@
-import { getAll } from "../../api";
-import AddTask from "./components/AddNewTask";
-import ListSchool from "./components/ListSchool";
+"use client";
+import Table from "./components/Table";
+import { ToastContainer, toast } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
+import useSWR from "swr";
+import { ISchoolPaging } from "./type/schoolPaging";
+import { urlGetAll } from "../../api";
 
-export default async function Home() {
-  const schools = await getAll();
+export default function Home() {
+  const fetcher = (url: string) => fetch(url).then((e) => e.json());
+
+  const { data, error, isLoading } = useSWR(urlGetAll, fetcher);
+
   return (
-    <div className="grid grid-cols-6 gap-4 text-center">
+    <div className="grid grid-cols-6 gap-4">
       <div className="col-span-2"></div>
-      <div className="col-span-2 text-center">
-        <h1>School</h1>
+      <div className="col-span-2">
+        <h1>Management School</h1>
         <br />
-        <AddTask />
-        <br />
-        <ListSchool schools={schools?.schools} totalCount={1}/>
+        <Table ipaging={data} />
+        <ToastContainer />
       </div>
       <div className="col-span-2"></div>
     </div>
