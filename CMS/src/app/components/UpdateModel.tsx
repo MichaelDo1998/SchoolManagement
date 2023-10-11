@@ -1,12 +1,10 @@
-"use client";
-
-import { useEffect, useState } from "react";
-import { InputGroup } from "react-bootstrap";
+import { useEffect } from "react";
 import { toast } from "react-toastify";
-import { Update, urlGetAll } from "../../../api";
-import { mutate } from "swr";
+import { Update } from "../../../api";
 import { ISchool } from "../type/school";
 import { Button, Checkbox, DatePicker, Form, Input, Modal } from "antd";
+import { useRouter } from "next/navigation";
+import { FieldType, dateFormat } from "../type/common";
 import dayjs from "dayjs";
 
 interface IProps {
@@ -15,44 +13,23 @@ interface IProps {
   school: ISchool;
 }
 
-type FieldType = {
-  name?: string;
-};
-
-const dateFormat = "YYYY/MM/DD";
-
-const initValue: ISchool = {
-  isDelete: false,
-  name: "",
-};
-
 function ModalUpdate(props: IProps) {
   const { show, setShow, school } = props;
-  const [schoolUpdate, setSchool] = useState<ISchool>({
-    ...initValue,
-  });
-  const [dateCreate, setDate] = useState("");
   const [form] = Form.useForm();
-
-  form.setFieldsValue({ ...schoolUpdate });
+  const router = useRouter();
 
   useEffect(() => {
     if (school && school.id) {
-      setSchool({ ...school });
-      var dateT = new Date(school?.establishDate ?? "");
-      if (school?.establishDate)
-        setDate(
-          `${dateT.getFullYear()}-${dateT.getMonth() + 1}-${dateT.getDate()}`
-        );
+      form.setFieldsValue({
+        ...school,
+        establishDate: dayjs(school.establishDate),
+      });
     }
   }, [show]);
 
   const handleClose = () => {
     setShow(false);
-    mutate(urlGetAll);
-    setSchool({ ...initValue });
-    setDate("");
-    form.resetFields();
+    router.refresh();
   };
 
   const handleSubmit = async () => {
@@ -64,20 +41,10 @@ function ModalUpdate(props: IProps) {
       ) {
         return;
       } else {
-        if (!schoolUpdate?.name) {
-          toast.error("Please fill name");
-          return;
-        }
-
-        if (!schoolUpdate?.establishDate) {
-          toast.error("Please fill establish Date");
-          return;
-        }
-
-        const name = schoolUpdate?.name;
-        const isDelete = schoolUpdate?.isDelete;
-        const establishDate = schoolUpdate?.establishDate;
-        const id = schoolUpdate?.id;
+        const name = form.getFieldValue("name");
+        const isDelete = form.getFieldValue("isDelete");
+        const establishDate = form.getFieldValue("establishDate");
+        const id = form.getFieldValue("id");
 
         const rs = await Update({ name, isDelete, establishDate, id });
 
@@ -122,37 +89,13 @@ function ModalUpdate(props: IProps) {
               { required: true, message: "Please input your name school!" },
             ]}
           >
-            <Input
-              maxLength={250}
-              value={form.getFieldValue("name") || ""}
-              onChange={(e) =>
-                setSchool({ ...schoolUpdate, name: e.target.value })
-              }
-            />
+            <Input maxLength={250} />
           </Form.Item>
-          <Form.Item label="Date Establish">
-            <DatePicker
-              value={
-                dateCreate.length > 0 ? dayjs(dateCreate, dateFormat) : null
-              }
-              onChange={(e, datestring) => {
-                setDate(datestring);
-                setSchool({
-                  ...schoolUpdate,
-                  establishDate: new Date(datestring),
-                });
-              }}
-            />
+          <Form.Item label="Date Establish" name="establishDate">
+            <DatePicker format={dateFormat} />
           </Form.Item>
-          <Form.Item label="Delete" valuePropName="checked">
-            <Checkbox
-              checked={schoolUpdate?.isDelete ?? false}
-              onChange={(e) =>
-                setSchool({ ...schoolUpdate, isDelete: e.target.checked })
-              }
-            >
-              Checkbox
-            </Checkbox>
+          <Form.Item label="Delete" valuePropName="checked" name="isDelete">
+            <Checkbox />
           </Form.Item>
         </Form>
       </Modal>

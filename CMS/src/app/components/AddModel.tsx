@@ -2,53 +2,34 @@
 
 import { useState } from "react";
 import { toast } from "react-toastify";
-import { Add, urlGetAll } from "../../../api";
-import { mutate } from "swr";
-import { ISchool } from "../type/school";
+import { Add } from "../../../api";
 import { Button, Checkbox, DatePicker, Form, Input, Modal } from "antd";
-import dayjs from "dayjs";
-
-const dateFormat = "YYYY/MM/DD";
-
-const initValue: ISchool = {
-  isDelete: false,
-  name: "",
-};
-
-type FieldType = {
-  name?: string;
-};
+import { useRouter } from "next/navigation";
+import { FieldType, dateFormat } from "../type/common";
 
 function ModalAdd() {
   const [show, setShow] = useState(false);
-  const [school, setSchool] = useState<ISchool>({
-    ...initValue,
-  });
-  const [dateCreate, setDate] = useState("");
+  const router = useRouter();
   const [form] = Form.useForm();
 
   const handleClose = () => {
+    form.resetFields();
     setShow(false);
-    mutate(urlGetAll);
-    setSchool({
-      ...initValue,
-    });
-    setDate("");
+    router.refresh();
   };
 
   const handleSubmit = async () => {
     try {
       const values = await form.validateFields();
-
       if (
         values["errorFields"] &&
         (values["errorFields"] as Array<any>).length > 0
       ) {
         return;
       } else {
-        const name = school?.name;
-        const isDelete = school?.isDelete;
-        const establishDate = school?.establishDate;
+        const name = form.getFieldValue("name");
+        const isDelete = form.getFieldValue("isDelete");
+        const establishDate = form.getFieldValue("establishDate");
 
         const rs = await Add({ name, isDelete, establishDate });
 
@@ -64,11 +45,6 @@ function ModalAdd() {
       console.log("Failed:", errorInfo);
     }
   };
-
-  type FieldType = {
-    name?: string;
-  };
-
   return (
     <div>
       <Button
@@ -107,34 +83,13 @@ function ModalAdd() {
               { required: true, message: "Please input your name school!" },
             ]}
           >
-            <Input
-              name="name"
-              maxLength={250}
-              value={school?.name}
-              onChange={(e) => setSchool({ ...school, name: e.target.value })}
-            />
+            <Input maxLength={250} />
           </Form.Item>
-          <Form.Item label="Date Establish">
-            <DatePicker
-              value={dateCreate.length > 0 ? dayjs(dateCreate, dateFormat) : dayjs(undefined, dateFormat)}
-              onChange={(e, datestring) => {
-                setDate(datestring);
-                setSchool({
-                  ...school,
-                  establishDate: new Date(datestring),
-                });
-              }}
-              />
+          <Form.Item label="Date Establish" name="establishDate">
+            <DatePicker format={dateFormat} />
           </Form.Item>
-          <Form.Item label="Checkbox" valuePropName="checked">
-            <Checkbox
-              checked={school?.isDelete ?? false}
-              onChange={(e) =>
-                setSchool({ ...school, isDelete: e.target.checked })
-              }
-            >
-              Checkbox
-            </Checkbox>
+          <Form.Item label="Delete" valuePropName="checked" name="isDelete">
+            <Checkbox />
           </Form.Item>
         </Form>
       </Modal>

@@ -3,13 +3,13 @@
 import React, { useState } from "react";
 import { ISchoolPaging } from "../type/schoolPaging";
 import ModalAdd from "./AddModel";
-import { Delete, urlGetAll } from "../../../api";
+import { Delete } from "../../../api";
 import { toast } from "react-toastify";
-import { mutate } from "swr";
 import ModalUpdate from "./UpdateModel";
 import { ISchool } from "../type/school";
 import { Button } from "antd";
 import { CheckOutlined } from "@ant-design/icons";
+import { useRouter } from "next/navigation";
 
 interface IProps {
   ipaging: ISchoolPaging;
@@ -18,7 +18,7 @@ interface IProps {
 const initValue: ISchool = {
   isDelete: false,
   name: "",
-  id: 0
+  id: 0,
 };
 
 const Table: React.FC<IProps> = (props) => {
@@ -27,6 +27,7 @@ const Table: React.FC<IProps> = (props) => {
   const [school, setSchool] = useState<ISchool>({
     ...initValue,
   });
+  const router = useRouter();
 
   const DeleteSchool = async (id?: number, name?: string) => {
     if (confirm(`Do you want delete ${name}`)) {
@@ -34,7 +35,7 @@ const Table: React.FC<IProps> = (props) => {
         var rs = await Delete(id);
         if (rs && rs == 200) {
           toast.success("Delete  school success");
-          mutate(urlGetAll);
+          router.refresh();
         } else {
           toast.error("Delete error");
         }

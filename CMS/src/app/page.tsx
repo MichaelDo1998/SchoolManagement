@@ -1,14 +1,10 @@
-"use client";
 import Table from "./components/Table";
 import { ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
-import useSWR from "swr";
-import { urlGetAll } from "../../api";
+import { GetAll } from "../../api";
 
-export default function Home() {
-  const fetcher = (url: string) => fetch(url).then((e) => e.json());
-
-  const { data } = useSWR(urlGetAll, fetcher);
+export default async function Home() {
+  const data = await GetAll();
 
   return (
     <div className="grid grid-cols-6 gap-4">

@@ -1,9 +1,17 @@
+import { ISchoolPaging } from "@/app/type/schoolPaging";
+
 const baseUrl = "http://localhost:7297/api/School";
+
 export const urlGetAll = `${baseUrl}/GetAll`;
 const headers = {
   "Content-Type": "application/json, text/plain, */*",
   accept: "*/*",
   "Access-Control-Allow-Origin": "*",
+};
+
+export const GetAll = async (): Promise<ISchoolPaging> => {
+  var rs = await fetch(urlGetAll, { next: { revalidate: 0 } });
+  return await rs.json();
 };
 
 export const Add = async (data: any): Promise<any> => {
