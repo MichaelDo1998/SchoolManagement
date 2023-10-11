@@ -1,112 +1,144 @@
 "use client";
 
 import { useState } from "react";
-import { InputGroup } from "react-bootstrap";
-import Button from "react-bootstrap/Button";
-import Form from "react-bootstrap/Form";
-import Modal from "react-bootstrap/Modal";
 import { toast } from "react-toastify";
 import { Add, urlGetAll } from "../../../api";
 import { mutate } from "swr";
 import { ISchool } from "../type/school";
+import { Button, Checkbox, DatePicker, Form, Input, Modal } from "antd";
+import dayjs from "dayjs";
 
-interface IProps {
-  show: boolean;
-  setShow: (value: boolean) => void;
-}
+const dateFormat = "YYYY/MM/DD";
 
-function ModalAdd(props: IProps) {
-  const { show, setShow } = props;
-  const [school, setSchool] = useState<ISchool>({});
+const initValue: ISchool = {
+  isDelete: false,
+  name: "",
+};
+
+type FieldType = {
+  name?: string;
+};
+
+function ModalAdd() {
+  const [show, setShow] = useState(false);
+  const [school, setSchool] = useState<ISchool>({
+    ...initValue,
+  });
   const [dateCreate, setDate] = useState("");
+  const [form] = Form.useForm();
 
   const handleClose = () => {
     setShow(false);
     mutate(urlGetAll);
-    setSchool({});
+    setSchool({
+      ...initValue,
+    });
     setDate("");
   };
-  
+
   const handleSubmit = async () => {
-    if (!school?.name) {
-      toast.error("Please fill name");
-      return;
+    try {
+      const values = await form.validateFields();
+
+      if (
+        values["errorFields"] &&
+        (values["errorFields"] as Array<any>).length > 0
+      ) {
+        return;
+      } else {
+        const name = school?.name;
+        const isDelete = school?.isDelete;
+        const establishDate = school?.establishDate;
+
+        const rs = await Add({ name, isDelete, establishDate });
+
+        if (rs && rs == 200) {
+          form.resetFields();
+          toast.success("Add school success");
+          handleClose();
+        } else {
+          toast.error("Add error");
+        }
+      }
+    } catch (errorInfo) {
+      console.log("Failed:", errorInfo);
     }
+  };
 
-    if (!school?.establishDate) {
-      toast.error("Please fill establish Date");
-      return;
-    }
-
-    const name = school?.name;
-    const isDelete = school?.isDelete;
-    const establishDate = school?.establishDate;
-
-    const rs = await Add({ name, isDelete, establishDate });
-
-    if (rs && rs == 200) {
-      toast.success("Add school success");
-      handleClose();
-    } else {
-      toast.error("Add error");
-    }
+  type FieldType = {
+    name?: string;
   };
 
   return (
-    <>
-      <Modal show={show} onHide={handleClose}>
-        <Modal.Header closeButton>
-          <Modal.Title>Add new School</Modal.Title>
-        </Modal.Header>
-        <Modal.Body>
-          <Form>
-            <Form.Group className="mb-3" controlId="exampleForm.ControlInput1">
-              <Form.Label>Name</Form.Label>
-              <Form.Control
-                type="text"
-                placeholder="Please fill Name school"
-                maxLength={250}
-                value={school?.name}
-                onChange={(e) => setSchool({ ...school, name: e.target.value })}
-              />
-            </Form.Group>
-            <Form.Group className="mb-3" controlId="exampleForm.ControlInput1">
-              <Form.Label>Establish Date</Form.Label>
-              <Form.Control
-                type="date"
-                placeholder="Please select date establish"
-                value={dateCreate}
-                onChange={(e) => {
-                  setDate(e.target.value);
-                  setSchool({
-                    ...school,
-                    establishDate: new Date(e.target.value),
-                  });
-                }}
-              />
-            </Form.Group>
-            <InputGroup className="mb-3">
-              <Form.Label className="mb-3 mr-3 mt-3">Is Delete</Form.Label>
-              <br />
-              <InputGroup.Checkbox
-                checked={school?.isDelete ?? false}
-                onChange={(e) =>
-                  setSchool({ ...school, isDelete: e.target.checked })
-                }
-              />
-            </InputGroup>
-          </Form>
-        </Modal.Body>
-        <Modal.Footer>
-          <Button variant="secondary" onClick={handleClose}>
-            Close
-          </Button>
-          <Button variant="primary" onClick={handleSubmit}>
+    <div>
+      <Button
+        onClick={() => {
+          setShow(true);
+        }}
+        type="primary"
+      >
+        Add
+      </Button>
+
+      <Modal
+        title="Add New School"
+        open={show}
+        onOk={handleSubmit}
+        onCancel={() => handleClose()}
+        footer={[
+          <Button key="back" onClick={handleClose}>
+            Cancel
+          </Button>,
+          <Button key="submit" type="primary" onClick={handleSubmit}>
             Save
-          </Button>
-        </Modal.Footer>
+          </Button>,
+        ]}
+      >
+        <Form
+          labelCol={{ span: 8 }}
+          wrapperCol={{ span: 14 }}
+          layout="horizontal"
+          form={form}
+        >
+          <Form.Item<FieldType>
+            label="Name"
+            name="name"
+            rules={[
+              { required: true, message: "Please input your name school!" },
+            ]}
+          >
+            <Input
+              name="name"
+              maxLength={250}
+              value={school?.name}
+              onChange={(e) => setSchool({ ...school, name: e.target.value })}
+            />
+          </Form.Item>
+          <Form.Item label="Date Establish">
+            <DatePicker
+              value={dateCreate.length > 0 ? dayjs(dateCreate, dateFormat) : dayjs(undefined, dateFormat)}
+              onChange={(e, datestring) => {
+                setDate(datestring);
+                setSchool({
+                  ...school,
+                  establishDate: new Date(datestring),
+                });
+              }}
+              />
+          </Form.Item>
+          <Form.Item label="Checkbox" valuePropName="checked">
+            <Checkbox
+              checked={school?.isDelete ?? false}
+              onChange={(e) =>
+                setSchool({ ...school, isDelete: e.target.checked })
+              }
+            >
+              Checkbox
+            </Checkbox>
+          </Form.Item>
+        </Form>
       </Modal>
-    </>
+    </div>
   );
 }
 

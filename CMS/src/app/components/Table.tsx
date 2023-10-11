@@ -2,23 +2,31 @@
 
 import React, { useState } from "react";
 import { ISchoolPaging } from "../type/schoolPaging";
-import { Button } from "react-bootstrap";
 import ModalAdd from "./AddModel";
 import { Delete, urlGetAll } from "../../../api";
 import { toast } from "react-toastify";
 import { mutate } from "swr";
 import ModalUpdate from "./UpdateModel";
 import { ISchool } from "../type/school";
+import { Button } from "antd";
+import { CheckOutlined } from "@ant-design/icons";
 
 interface IProps {
   ipaging: ISchoolPaging;
 }
 
+const initValue: ISchool = {
+  isDelete: false,
+  name: "",
+  id: 0
+};
+
 const Table: React.FC<IProps> = (props) => {
   const { ipaging } = props;
-  const [showAdd, setShowAdd] = useState(false);
   const [showUpdate, setShowUpdate] = useState(false);
-  const [school, setSchool] = useState<ISchool | null>(null);
+  const [school, setSchool] = useState<ISchool>({
+    ...initValue,
+  });
 
   const DeleteSchool = async (id?: number, name?: string) => {
     if (confirm(`Do you want delete ${name}`)) {
@@ -34,54 +42,45 @@ const Table: React.FC<IProps> = (props) => {
     }
   };
 
-  
   return (
     <div>
-      <Button
-        className="btn btn-info justify-end"
-        onClick={() => setShowAdd(true)}
-      >
-        Add
-      </Button>
+      <ModalAdd />
       <br />
       <br />
       <table className="table table-xs">
         <thead>
           <tr>
             <th></th>
-            <th>Name</th>
-            <th>EstablishDate</th>
-            <th>Delete</th>
-            <th>Action</th>
+            <th className="text-center">Name</th>
+            <th className="text-center">EstablishDate</th>
+            <th className="text-center">Delete</th>
+            <th className="text-center">Action</th>
           </tr>
         </thead>
         <tbody>
-          {ipaging?.schools?.map((x, index) => (
+          {(ipaging ?? {})?.schools?.map((x, index) => (
             <tr key={index}>
               <th>{index + 1}</th>
-              <td>{x.name}</td>
-              <td>
-                {x?.establishDate &&
+              <td className="text-center">{x.name}</td>
+              <td className="text-center">
+                {x.establishDate &&
                   new Date(x?.establishDate ?? "").toLocaleDateString()}
               </td>
+              <td className="text-center">{x.isDelete && <CheckOutlined />}</td>
               <td className="text-center">
-                <input
-                  type="checkbox"
-                  checked={x.isDelete}
-                  className="checkbox checkbox-secondary"
-                  onChange={() => console.log()}
-                />
-              </td>
-              <td>
-                <Button variant="primary" className="btn btn-accent mx-2" onClick={()=>{
-                  setShowUpdate(true);
-                  setSchool(x);
-                }}>
+                <Button
+                  type="dashed"
+                  className="mx-2"
+                  onClick={() => {
+                    setShowUpdate(true);
+                    setSchool(x ?? {});
+                  }}
+                >
                   Edit
                 </Button>
                 <Button
-                  variant="secondary"
-                  className="btn btn-secondary mx-2"
+                  type="link"
+                  className="mx-2"
                   onClick={() => DeleteSchool(x.id, x.name)}
                 >
                   Delete
@@ -92,8 +91,11 @@ const Table: React.FC<IProps> = (props) => {
         </tbody>
       </table>
 
-      <ModalAdd show={showAdd} setShow={setShowAdd} />
-      <ModalUpdate show={showUpdate} setShow={setShowUpdate} school={school}/>
+      <ModalUpdate
+        show={showUpdate}
+        setShow={setShowUpdate}
+        school={school ?? {}}
+      />
     </div>
   );
 };
