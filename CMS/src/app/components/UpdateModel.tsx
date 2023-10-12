@@ -63,7 +63,7 @@ function ModalUpdate(props: IProps) {
   return (
     <>
       <Modal
-        title="Update New School"
+        title="Update School"
         open={show}
         onOk={handleSubmit}
         onCancel={() => handleClose()}
