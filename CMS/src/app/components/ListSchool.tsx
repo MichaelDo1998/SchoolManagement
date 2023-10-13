@@ -28,6 +28,9 @@ const ListSchool: React.FC<IProps> = (props) => {
     setLoading(true);
     setTimeout(() => {
       setEntities(ipaging.schools ?? []);
+      const elementHandleScroll =
+        document.getElementsByClassName("ant-table-body")[0];
+      elementHandleScroll.removeEventListener("scroll", handleScroll);
       setLoading(false);
     }, 1000);
   };
@@ -42,9 +45,6 @@ const ListSchool: React.FC<IProps> = (props) => {
   const handleScroll = (e: any) => {
     if (isBottom(e)) {
       handleLoadMore();
-      const elementHandleScroll =
-        document.getElementsByClassName("ant-table-body")[0];
-      elementHandleScroll.removeEventListener("scroll", handleScroll);
     }
   };
 
