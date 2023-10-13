@@ -1,4 +1,4 @@
-import { ColumnsType, TablePaginationConfig } from "antd/es/table";
+import { TablePaginationConfig } from "antd/es/table";
 import { ISchool } from "./school";
 import { FilterValue } from "antd/es/table/interface";
 
@@ -20,28 +20,17 @@ export const formatDate = (value: Date): string => {
 
 };
 
-export const columns: ColumnsType<ISchool> = [
-  {
-    title: "Name",
-    dataIndex: "name",
-    key: "name",
-  },
-  {
-    title: "EstablishDate",
-    dataIndex: "age",
-    key: "age",
-  },
-  {
-    title: "Delete",
-    dataIndex: "address",
-    key: "address",
-  },
-];
-
-
 export interface TableParams {
   pagination?: TablePaginationConfig;
   sortField?: string;
   sortOrder?: string;
   filters?: Record<string, FilterValue>;
 }
+
+export const options = [
+  { label: 'Order', value: 'order' },
+  { label: 'Name', value: 'name' },
+  { label: 'Establish Date', value: 'date' },
+  { label: 'Delete', value: 'isDelete' },
+  { label: 'Action', value: 'action' },
+];

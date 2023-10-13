@@ -7,11 +7,21 @@ import { Delete } from "../../../api";
 import { toast } from "react-toastify";
 import ModalUpdate from "./UpdateModel";
 import { ISchool } from "../type/school";
-import { Button, Space, Table, TablePaginationConfig } from "antd";
-import { CheckOutlined } from "@ant-design/icons";
+import {
+  Button,
+  Checkbox,
+  Col,
+  Popconfirm,
+  Row,
+  Space,
+  Table,
+  TablePaginationConfig,
+} from "antd";
+import { CheckOutlined, UnorderedListOutlined } from "@ant-design/icons";
 import { useRouter } from "next/navigation";
-import { TableParams, formatDate, initValue } from "../type/common";
-import Column from "antd/es/table/Column";
+import { TableParams, formatDate, initValue, options } from "../type/common";
+import { ColumnsType } from "antd/es/table";
+import { CheckboxValueType } from "antd/es/checkbox/Group";
 
 interface IProps {
   ipaging: ISchoolPaging;
@@ -25,7 +35,18 @@ const TableSchool: React.FC<IProps> = (props) => {
   const [school, setSchool] = useState<ISchool>({
     ...initValue,
   });
+  const [defaultChecked, setDefaultChecked] = useState(
+    [] as CheckboxValueType[]
+  );
 
+  useEffect(() => {
+    setDefaultChecked(
+      localStorage.getItem("lstColumnChecked")?.split(",") ||
+        ([] as CheckboxValueType[])
+    );
+  }, []);
+
+  const router = useRouter();
   const [tableParams, setTableParams] = useState<TableParams>({
     pagination: {
       current: current ?? 1,
@@ -46,8 +67,6 @@ const TableSchool: React.FC<IProps> = (props) => {
       router.replace(`?pageSize=${tableParams.pagination?.pageSize}`);
   };
 
-  const router = useRouter();
-
   const DeleteSchool = async (id?: number, name?: string) => {
     if (confirm(`Do you want delete ${name}`)) {
       if (id) {
@@ -62,10 +81,103 @@ const TableSchool: React.FC<IProps> = (props) => {
     }
   };
 
+  const onChangeCheckList = (checkedValues: CheckboxValueType[]) => {
+    setDefaultChecked(checkedValues);
+    localStorage.setItem("lstColumnChecked", checkedValues.toString());
+  };
+
+  const columns: ColumnsType<ISchool> = [
+    {
+      title: "Order",
+      dataIndex: "order",
+      key: "order",
+      className: "text-center",
+      render: (_: any, record, index) => index + 1,
+    },
+    {
+      title: "Name",
+      dataIndex: "name",
+      key: "name",
+      className: "text-center",
+    },
+    {
+      title: "Establish Date",
+      dataIndex: "date",
+      key: "date",
+      className: "text-center",
+      render: (_: any, record: ISchool) => (
+        <Space size="middle">
+          {formatDate(record?.establishDate ?? new Date())}
+        </Space>
+      ),
+    },
+    {
+      title: "Delete",
+      dataIndex: "isDelete",
+      key: "isDelete",
+      className: "text-center",
+      render: (_: any, record: ISchool) => (
+        <Space size="middle">{record.isDelete && <CheckOutlined />}</Space>
+      ),
+    },
+    {
+      title: "Action",
+      key: "action",
+      className: "text-center",
+      render: (_: any, record: ISchool) => (
+        <Space size="middle">
+          <Button
+            type="dashed"
+            onClick={() => {
+              setShowUpdate(true);
+              setSchool(record ?? {});
+            }}
+          >
+            Edit
+          </Button>
+          <Button
+            type="link"
+            onClick={() => DeleteSchool(record.id, record.name)}
+          >
+            Delete
+          </Button>
+        </Space>
+      ),
+    },
+  ];
+
+  const columnTable = columns.filter((x) =>
+    defaultChecked.some((e) => e == x.key)
+  );
+
   return (
     <div>
-      <ModalAdd />
-      <br />
+      <Row>
+        <ModalAdd />
+
+        <Col span={12} className="text-end">
+          <Popconfirm
+            title="Select column"
+            showCancel={false}
+            okText="Close"
+            description={() => {
+              return (
+                <div>
+                  {" "}
+                  <Checkbox.Group
+                    options={options}
+                    defaultValue={defaultChecked}
+                    onChange={onChangeCheckList}
+                  />
+                </div>
+              );
+            }}
+            icon={<UnorderedListOutlined />}
+          >
+            <Button type="default">Filter</Button>
+          </Popconfirm>
+        </Col>
+      </Row>
       <br />
 
       <Table
@@ -73,62 +185,8 @@ const TableSchool: React.FC<IProps> = (props) => {
         pagination={tableParams.pagination}
         onChange={handleTableChange}
         rowKey="id"
-
-      >
-        <Column
-          key="abc"
-          title="Order"
-          dataIndex="key"
-          className="text-center"
-          render={(_: any, record: ISchool, index) => index + 1}
-        />
-        <Column title="Name" dataIndex="name" key="name" />
-        <Column
-          title="Establish Date"
-          dataIndex="establishDate"
-          key="establishDate"
-          className="text-center"
-          render={(_: any, record: ISchool) => (
-            <Space size="middle">
-              {formatDate(record?.establishDate ?? new Date())}
-            </Space>
-          )}
-        />
-        <Column
-          title="Delete"
-          dataIndex="isDelete"
-          key="isDelete"
-          className="text-center"
-          render={(_: any, record: ISchool) => (
-            <Space size="middle">{record.isDelete && <CheckOutlined />}</Space>
-          )}
-        />
-
-        <Column
-          title="Action"
-          key="action"
-          className="text-center"
-          render={(_: any, record: ISchool) => (
-            <Space size="middle">
-              <Button
-                type="dashed"
-                onClick={() => {
-                  setShowUpdate(true);
-                  setSchool(record ?? {});
-                }}
-              >
-                Edit
-              </Button>
-              <Button
-                type="link"
-                onClick={() => DeleteSchool(record.id, record.name)}
-              >
-                Delete
-              </Button>
-            </Space>
-          )}
-        />
-      </Table>
+        columns={columnTable}
+      ></Table>
 
       <ModalUpdate
         show={showUpdate}

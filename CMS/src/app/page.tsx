@@ -12,7 +12,6 @@ export default async function Home({
 }) {
   const data = await GetAll();
 
-  console.log(searchParams);
   return (
     <div className="grid grid-cols-6 gap-4">
       <div className="col-span-2"></div>

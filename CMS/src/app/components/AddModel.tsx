@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { toast } from "react-toastify";
 import { Add } from "../../../api";
-import { Button, Checkbox, DatePicker, Form, Input, Modal } from "antd";
+import { Button, Checkbox, Col, DatePicker, Form, Input, Modal } from "antd";
 import { useRouter } from "next/navigation";
 import { FieldType, dateFormat } from "../type/common";
 
@@ -46,16 +46,17 @@ function ModalAdd() {
     }
   };
   return (
-    <div>
-      <Button
-        onClick={() => {
-          setShow(true);
-        }}
-        type="primary"
-      >
-        Add
-      </Button>
-
+    <>
+      <Col span={12}>
+        <Button
+          onClick={() => {
+            setShow(true);
+          }}
+          type="primary"
+        >
+          Add
+        </Button>
+      </Col>
       <Modal
         title="Add New School"
         open={show}
@@ -93,7 +94,7 @@ function ModalAdd() {
           </Form.Item>
         </Form>
       </Modal>
-    </div>
+    </>
   );
 }
 
