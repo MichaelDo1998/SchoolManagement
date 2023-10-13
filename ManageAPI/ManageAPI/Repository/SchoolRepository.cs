@@ -38,14 +38,23 @@ namespace ManageAPI.Repository
                 throw new Exception(ex.Message);
             }
         }
-
-        public async Task<SchoolModel> GetAll()
+        public async Task<SchoolModel> GetAll(int entities)
         {
             try
             {
-                var allSchool = await _dbContext.Schools
-                    .ToListAsync();
-                var amountSchool = await _dbContext.Schools.CountAsync();
+                var allSchool = new List<School>();
+
+                if (entities > 0)
+                    allSchool = await _dbContext.Schools
+                        .Take(entities)
+                        .OrderByDescending(x => x.CreatedDate)
+                        .ToListAsync();
+                else
+                    allSchool = await _dbContext.Schools
+                        .ToListAsync();
+
+                var amountSchool = await _dbContext.Schools
+                        .CountAsync();
 
                 return new SchoolModel()
                 {
@@ -72,7 +81,7 @@ namespace ManageAPI.Repository
             }
         }
 
-        public async Task<SchoolModel> GetPaging(PageInfo paging)
+        public async Task<SchoolModel> GetPaging(PageRequest paging)
         {
             try
             {

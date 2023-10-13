@@ -2,10 +2,10 @@
 
 import React, { useEffect, useState } from "react";
 import { ISchoolPaging } from "../type/schoolPaging";
-import ModalAdd from "./AddModel";
+import ModalAdd from "./AddSchool";
 import { Delete } from "../../../api";
 import { toast } from "react-toastify";
-import ModalUpdate from "./UpdateModel";
+import ModalUpdate from "./UpdateSchool";
 import { ISchool } from "../type/school";
 import {
   Button,
@@ -17,7 +17,7 @@ import {
   Table,
   TablePaginationConfig,
 } from "antd";
-import { CheckOutlined, UnorderedListOutlined } from "@ant-design/icons";
+import { CheckOutlined, FilterOutlined, UnorderedListOutlined } from "@ant-design/icons";
 import { useRouter } from "next/navigation";
 import { TableParams, formatDate, initValue, options } from "../type/common";
 import { ColumnsType } from "antd/es/table";
@@ -174,7 +174,7 @@ const TableSchool: React.FC<IProps> = (props) => {
             }}
             icon={<UnorderedListOutlined />}
           >
-            <Button type="default">Filter</Button>
+            <Button type="default">Filter <FilterOutlined /></Button>
           </Popconfirm>
         </Col>
       </Row>

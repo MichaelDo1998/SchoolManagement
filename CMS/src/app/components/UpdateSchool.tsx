@@ -1,19 +1,33 @@
-"use client";
-
-import { useState } from "react";
+import { useEffect } from "react";
 import { toast } from "react-toastify";
-import { Add } from "../../../api";
-import { Button, Checkbox, Col, DatePicker, Form, Input, Modal } from "antd";
+import { Update } from "../../../api";
+import { ISchool } from "../type/school";
+import { Button, Checkbox, DatePicker, Form, Input, Modal } from "antd";
 import { useRouter } from "next/navigation";
 import { FieldType, dateFormat } from "../type/common";
+import dayjs from "dayjs";
 
-function ModalAdd() {
-  const [show, setShow] = useState(false);
-  const router = useRouter();
+interface IProps {
+  show: boolean;
+  setShow: (value: boolean) => void;
+  school: ISchool;
+}
+
+function UpdateSchool(props: IProps) {
+  const { show, setShow, school } = props;
   const [form] = Form.useForm();
+  const router = useRouter();
+
+  useEffect(() => {
+    if (school && school.id) {
+      form.setFieldsValue({
+        ...school,
+        establishDate: dayjs(school.establishDate),
+      });
+    }
+  }, [show]);
 
   const handleClose = () => {
-    form.resetFields();
     setShow(false);
     router.refresh();
   };
@@ -30,35 +44,26 @@ function ModalAdd() {
         const name = form.getFieldValue("name");
         const isDelete = form.getFieldValue("isDelete");
         const establishDate = form.getFieldValue("establishDate");
+        const id = form.getFieldValue("id");
 
-        const rs = await Add({ name, isDelete, establishDate });
+        const rs = await Update({ name, isDelete, establishDate, id });
 
         if (rs && rs == 200) {
-          form.resetFields();
-          toast.success("Add school success");
+          toast.success("Update school success");
           handleClose();
         } else {
-          toast.error("Add error");
+          toast.error("Update error");
         }
       }
-    } catch (errorInfo) {
-      console.log("Failed:", errorInfo);
+    } catch (error) {
+      console.log("Failed:", error);
     }
   };
+
   return (
     <>
-      <Col span={12}>
-        <Button
-          onClick={() => {
-            setShow(true);
-          }}
-          type="primary"
-        >
-          Add
-        </Button>
-      </Col>
       <Modal
-        title="Add New School"
+        title="Update School"
         open={show}
         onOk={handleSubmit}
         onCancel={() => handleClose()}
@@ -98,4 +103,4 @@ function ModalAdd() {
   );
 }
 
-export default ModalAdd;
+export default UpdateSchool;

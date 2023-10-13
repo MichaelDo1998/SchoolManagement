@@ -9,8 +9,8 @@ const headers = {
   "Access-Control-Allow-Origin": "*",
 };
 
-export const GetAll = async (): Promise<ISchoolPaging> => {
-  var rs = await fetch(urlGetAll, { next: { revalidate: 0 } });
+export const GetAll = async (entities?: number): Promise<ISchoolPaging> => {
+  var rs = await fetch(urlGetAll + (entities ? `?entities=${entities}` : ""), { next: { revalidate: 0 } });
   return await rs.json();
 };
 

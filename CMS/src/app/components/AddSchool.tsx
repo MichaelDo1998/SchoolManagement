@@ -1,33 +1,20 @@
-import { useEffect } from "react";
+"use client";
+
+import { useState } from "react";
 import { toast } from "react-toastify";
-import { Update } from "../../../api";
-import { ISchool } from "../type/school";
-import { Button, Checkbox, DatePicker, Form, Input, Modal } from "antd";
+import { Add } from "../../../api";
+import { Button, Checkbox, Col, DatePicker, Form, Input, Modal } from "antd";
 import { useRouter } from "next/navigation";
 import { FieldType, dateFormat } from "../type/common";
-import dayjs from "dayjs";
+import { PlusCircleOutlined } from "@ant-design/icons";
 
-interface IProps {
-  show: boolean;
-  setShow: (value: boolean) => void;
-  school: ISchool;
-}
-
-function ModalUpdate(props: IProps) {
-  const { show, setShow, school } = props;
-  const [form] = Form.useForm();
+function AddSchool() {
+  const [show, setShow] = useState(false);
   const router = useRouter();
-
-  useEffect(() => {
-    if (school && school.id) {
-      form.setFieldsValue({
-        ...school,
-        establishDate: dayjs(school.establishDate),
-      });
-    }
-  }, [show]);
+  const [form] = Form.useForm();
 
   const handleClose = () => {
+    form.resetFields();
     setShow(false);
     router.refresh();
   };
@@ -44,26 +31,35 @@ function ModalUpdate(props: IProps) {
         const name = form.getFieldValue("name");
         const isDelete = form.getFieldValue("isDelete");
         const establishDate = form.getFieldValue("establishDate");
-        const id = form.getFieldValue("id");
 
-        const rs = await Update({ name, isDelete, establishDate, id });
+        const rs = await Add({ name, isDelete, establishDate });
 
         if (rs && rs == 200) {
-          toast.success("Update school success");
+          form.resetFields();
+          toast.success("Add school success");
           handleClose();
         } else {
-          toast.error("Update error");
+          toast.error("Add error");
         }
       }
-    } catch (error) {
-      console.log("Failed:", error);
+    } catch (errorInfo) {
+      console.log("Failed:", errorInfo);
     }
   };
-
   return (
     <>
+      <Col span={12}>
+        <Button
+          onClick={() => {
+            setShow(true);
+          }}
+          type="primary"
+        >
+          Add <PlusCircleOutlined className="pb-5" />
+        </Button>
+      </Col>
       <Modal
-        title="Update School"
+        title="New School"
         open={show}
         onOk={handleSubmit}
         onCancel={() => handleClose()}
@@ -103,4 +99,4 @@ function ModalUpdate(props: IProps) {
   );
 }
 
-export default ModalUpdate;
+export default AddSchool;

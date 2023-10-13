@@ -16,7 +16,7 @@ namespace ManageAPI.Controllers
         }
 
         [HttpPost("GetPaging")]
-        public async Task<IActionResult> GetPaging([FromBody]PageInfo paging)
+        public async Task<IActionResult> GetPaging([FromBody]PageRequest paging)
         {
             try
             {
@@ -24,7 +24,7 @@ namespace ManageAPI.Controllers
                 source.CancelAfter(TimeSpan.FromSeconds(10));
 
                 var result = await _schoolRepository.GetPaging(paging);
-
+                 
                 source.Token.ThrowIfCancellationRequested();
                 return Ok(result);
             }
@@ -39,14 +39,14 @@ namespace ManageAPI.Controllers
         }
 
         [HttpGet("GetAll")]
-        public async Task<IActionResult> GetAll()
+        public async Task<IActionResult> GetAll(int entities)
         {
             try
             {
                 CancellationTokenSource source = new CancellationTokenSource();
                 source.CancelAfter(TimeSpan.FromSeconds(10));
 
-                var result = await _schoolRepository.GetAll();
+                var result = await _schoolRepository.GetAll(entities);
 
                 source.Token.ThrowIfCancellationRequested();
                 return Ok(result);
@@ -136,7 +136,7 @@ namespace ManageAPI.Controllers
         {
             try
             { 
-                    CancellationTokenSource source = new CancellationTokenSource();
+                CancellationTokenSource source = new CancellationTokenSource();
                 source.CancelAfter(TimeSpan.FromSeconds(10));
 
                 entity.CreatedDate = DateTime.Now;

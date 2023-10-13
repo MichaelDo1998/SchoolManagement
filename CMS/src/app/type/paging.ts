@@ -1,4 +1,5 @@
-export interface ISchool {
+export interface IPageRequest {
     CurrentPage: number,
     PageSize: string,
 }
+
